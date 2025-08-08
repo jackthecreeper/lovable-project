@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  portfolioItems PortfolioItem[]
+  watchlistItems WatchlistItem[]
+}
+
+model Cryptocurrency {
+  id              String   @id @default(cuid())
+  coinId          String   @unique
+  name            String
+  symbol          String
+  image           String?
+  currentPrice    Float
+  marketCap       Float?
+  priceChange24h  Float?
+  lastUpdated     DateTime @default(now())
+
+  portfolioItems PortfolioItem[]
+  watchlistItems WatchlistItem[]
+}
+
+model PortfolioItem {
+  id            String   @id @default(cuid())
+  userId        String
+  cryptoId      String
+  amount        Float
+  purchasePrice Float
+  purchaseDate  DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  crypto Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+}
+
+model WatchlistItem {
+  id       String   @id @default(cuid())
+  userId   String
+  cryptoId String
+  addedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  crypto Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cryptoId])
+}
